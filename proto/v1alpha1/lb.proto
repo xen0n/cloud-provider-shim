@@ -6,7 +6,47 @@ option go_package = "proto/v1alpha1";
 
 import "k8s.io/api/core/v1/generated.proto";
 
-message Foo {
-  k8s.io.api.core.v1.Service svc = 1;
-  string name = 2;
+message ServiceRef {
+  string clusterName = 1;
+  k8s.io.api.core.v1.Service service = 2;
+}
+
+message GetLoadBalancerResp {
+  bool ok = 1;
+  string errMsg = 2;
+
+  k8s.io.api.core.v1.LoadBalancerStatus status = 3;
+  bool exists = 4;
+}
+
+message GetLoadBalancerNameResp {
+  bool ok = 1;
+  string errMsg = 2;
+
+  string name = 3;
+}
+
+message LoadBalancerParams {
+  ServiceRef service = 1;
+  repeated k8s.io.api.core.v1.Node nodes = 2;
+}
+
+message EnsureLoadBalancerResp {
+  bool ok = 1;
+  string errMsg = 2;
+
+  k8s.io.api.core.v1.LoadBalancerStatus status = 3;
+}
+
+message SimpleResp {
+  bool ok = 1;
+  string errMsg = 2;
+}
+
+service ShimLoadBalancerService {
+  rpc GetLoadBalancer(ServiceRef) returns (GetLoadBalancerResp) {}
+  rpc GetLoadBalancerName(ServiceRef) returns (GetLoadBalancerNameResp) {}
+  rpc EnsureLoadBalancer(LoadBalancerParams) returns (EnsureLoadBalancerResp) {}
+  rpc UpdateLoadBalancer(LoadBalancerParams) returns (SimpleResp) {}
+  rpc EnsureLoadBalancerDeleted(ServiceRef) returns (SimpleResp) {}
 }

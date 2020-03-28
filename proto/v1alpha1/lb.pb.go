@@ -4,8 +4,12 @@
 package v1alpha1
 
 import (
+	context "context"
 	fmt "fmt"
 	proto "github.com/gogo/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	v1 "k8s.io/api/core/v1"
 	math "math"
 )
@@ -21,70 +25,580 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type Foo struct {
-	Svc                  *v1.Service `protobuf:"bytes,1,opt,name=svc,proto3" json:"svc,omitempty"`
-	Name                 string      `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+type ServiceRef struct {
+	ClusterName          string      `protobuf:"bytes,1,opt,name=clusterName,proto3" json:"clusterName,omitempty"`
+	Service              *v1.Service `protobuf:"bytes,2,opt,name=service,proto3" json:"service,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
 	XXX_unrecognized     []byte      `json:"-"`
 	XXX_sizecache        int32       `json:"-"`
 }
 
-func (m *Foo) Reset()         { *m = Foo{} }
-func (m *Foo) String() string { return proto.CompactTextString(m) }
-func (*Foo) ProtoMessage()    {}
-func (*Foo) Descriptor() ([]byte, []int) {
+func (m *ServiceRef) Reset()         { *m = ServiceRef{} }
+func (m *ServiceRef) String() string { return proto.CompactTextString(m) }
+func (*ServiceRef) ProtoMessage()    {}
+func (*ServiceRef) Descriptor() ([]byte, []int) {
 	return fileDescriptor_55aa07ea648bece9, []int{0}
 }
-func (m *Foo) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Foo.Unmarshal(m, b)
+func (m *ServiceRef) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ServiceRef.Unmarshal(m, b)
 }
-func (m *Foo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Foo.Marshal(b, m, deterministic)
+func (m *ServiceRef) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ServiceRef.Marshal(b, m, deterministic)
 }
-func (m *Foo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Foo.Merge(m, src)
+func (m *ServiceRef) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ServiceRef.Merge(m, src)
 }
-func (m *Foo) XXX_Size() int {
-	return xxx_messageInfo_Foo.Size(m)
+func (m *ServiceRef) XXX_Size() int {
+	return xxx_messageInfo_ServiceRef.Size(m)
 }
-func (m *Foo) XXX_DiscardUnknown() {
-	xxx_messageInfo_Foo.DiscardUnknown(m)
+func (m *ServiceRef) XXX_DiscardUnknown() {
+	xxx_messageInfo_ServiceRef.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Foo proto.InternalMessageInfo
+var xxx_messageInfo_ServiceRef proto.InternalMessageInfo
 
-func (m *Foo) GetSvc() *v1.Service {
+func (m *ServiceRef) GetClusterName() string {
 	if m != nil {
-		return m.Svc
+		return m.ClusterName
+	}
+	return ""
+}
+
+func (m *ServiceRef) GetService() *v1.Service {
+	if m != nil {
+		return m.Service
 	}
 	return nil
 }
 
-func (m *Foo) GetName() string {
+type GetLoadBalancerResp struct {
+	Ok                   bool                   `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
+	ErrMsg               string                 `protobuf:"bytes,2,opt,name=errMsg,proto3" json:"errMsg,omitempty"`
+	Status               *v1.LoadBalancerStatus `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	Exists               bool                   `protobuf:"varint,4,opt,name=exists,proto3" json:"exists,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
+	XXX_unrecognized     []byte                 `json:"-"`
+	XXX_sizecache        int32                  `json:"-"`
+}
+
+func (m *GetLoadBalancerResp) Reset()         { *m = GetLoadBalancerResp{} }
+func (m *GetLoadBalancerResp) String() string { return proto.CompactTextString(m) }
+func (*GetLoadBalancerResp) ProtoMessage()    {}
+func (*GetLoadBalancerResp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_55aa07ea648bece9, []int{1}
+}
+func (m *GetLoadBalancerResp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetLoadBalancerResp.Unmarshal(m, b)
+}
+func (m *GetLoadBalancerResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetLoadBalancerResp.Marshal(b, m, deterministic)
+}
+func (m *GetLoadBalancerResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetLoadBalancerResp.Merge(m, src)
+}
+func (m *GetLoadBalancerResp) XXX_Size() int {
+	return xxx_messageInfo_GetLoadBalancerResp.Size(m)
+}
+func (m *GetLoadBalancerResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetLoadBalancerResp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetLoadBalancerResp proto.InternalMessageInfo
+
+func (m *GetLoadBalancerResp) GetOk() bool {
+	if m != nil {
+		return m.Ok
+	}
+	return false
+}
+
+func (m *GetLoadBalancerResp) GetErrMsg() string {
+	if m != nil {
+		return m.ErrMsg
+	}
+	return ""
+}
+
+func (m *GetLoadBalancerResp) GetStatus() *v1.LoadBalancerStatus {
+	if m != nil {
+		return m.Status
+	}
+	return nil
+}
+
+func (m *GetLoadBalancerResp) GetExists() bool {
+	if m != nil {
+		return m.Exists
+	}
+	return false
+}
+
+type GetLoadBalancerNameResp struct {
+	Ok                   bool     `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
+	ErrMsg               string   `protobuf:"bytes,2,opt,name=errMsg,proto3" json:"errMsg,omitempty"`
+	Name                 string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetLoadBalancerNameResp) Reset()         { *m = GetLoadBalancerNameResp{} }
+func (m *GetLoadBalancerNameResp) String() string { return proto.CompactTextString(m) }
+func (*GetLoadBalancerNameResp) ProtoMessage()    {}
+func (*GetLoadBalancerNameResp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_55aa07ea648bece9, []int{2}
+}
+func (m *GetLoadBalancerNameResp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetLoadBalancerNameResp.Unmarshal(m, b)
+}
+func (m *GetLoadBalancerNameResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetLoadBalancerNameResp.Marshal(b, m, deterministic)
+}
+func (m *GetLoadBalancerNameResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetLoadBalancerNameResp.Merge(m, src)
+}
+func (m *GetLoadBalancerNameResp) XXX_Size() int {
+	return xxx_messageInfo_GetLoadBalancerNameResp.Size(m)
+}
+func (m *GetLoadBalancerNameResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetLoadBalancerNameResp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetLoadBalancerNameResp proto.InternalMessageInfo
+
+func (m *GetLoadBalancerNameResp) GetOk() bool {
+	if m != nil {
+		return m.Ok
+	}
+	return false
+}
+
+func (m *GetLoadBalancerNameResp) GetErrMsg() string {
+	if m != nil {
+		return m.ErrMsg
+	}
+	return ""
+}
+
+func (m *GetLoadBalancerNameResp) GetName() string {
 	if m != nil {
 		return m.Name
 	}
 	return ""
 }
 
+type LoadBalancerParams struct {
+	Service              *ServiceRef `protobuf:"bytes,1,opt,name=service,proto3" json:"service,omitempty"`
+	Nodes                []*v1.Node  `protobuf:"bytes,2,rep,name=nodes,proto3" json:"nodes,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
+	XXX_unrecognized     []byte      `json:"-"`
+	XXX_sizecache        int32       `json:"-"`
+}
+
+func (m *LoadBalancerParams) Reset()         { *m = LoadBalancerParams{} }
+func (m *LoadBalancerParams) String() string { return proto.CompactTextString(m) }
+func (*LoadBalancerParams) ProtoMessage()    {}
+func (*LoadBalancerParams) Descriptor() ([]byte, []int) {
+	return fileDescriptor_55aa07ea648bece9, []int{3}
+}
+func (m *LoadBalancerParams) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_LoadBalancerParams.Unmarshal(m, b)
+}
+func (m *LoadBalancerParams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_LoadBalancerParams.Marshal(b, m, deterministic)
+}
+func (m *LoadBalancerParams) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LoadBalancerParams.Merge(m, src)
+}
+func (m *LoadBalancerParams) XXX_Size() int {
+	return xxx_messageInfo_LoadBalancerParams.Size(m)
+}
+func (m *LoadBalancerParams) XXX_DiscardUnknown() {
+	xxx_messageInfo_LoadBalancerParams.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LoadBalancerParams proto.InternalMessageInfo
+
+func (m *LoadBalancerParams) GetService() *ServiceRef {
+	if m != nil {
+		return m.Service
+	}
+	return nil
+}
+
+func (m *LoadBalancerParams) GetNodes() []*v1.Node {
+	if m != nil {
+		return m.Nodes
+	}
+	return nil
+}
+
+type EnsureLoadBalancerResp struct {
+	Ok                   bool                   `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
+	ErrMsg               string                 `protobuf:"bytes,2,opt,name=errMsg,proto3" json:"errMsg,omitempty"`
+	Status               *v1.LoadBalancerStatus `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
+	XXX_unrecognized     []byte                 `json:"-"`
+	XXX_sizecache        int32                  `json:"-"`
+}
+
+func (m *EnsureLoadBalancerResp) Reset()         { *m = EnsureLoadBalancerResp{} }
+func (m *EnsureLoadBalancerResp) String() string { return proto.CompactTextString(m) }
+func (*EnsureLoadBalancerResp) ProtoMessage()    {}
+func (*EnsureLoadBalancerResp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_55aa07ea648bece9, []int{4}
+}
+func (m *EnsureLoadBalancerResp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EnsureLoadBalancerResp.Unmarshal(m, b)
+}
+func (m *EnsureLoadBalancerResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EnsureLoadBalancerResp.Marshal(b, m, deterministic)
+}
+func (m *EnsureLoadBalancerResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EnsureLoadBalancerResp.Merge(m, src)
+}
+func (m *EnsureLoadBalancerResp) XXX_Size() int {
+	return xxx_messageInfo_EnsureLoadBalancerResp.Size(m)
+}
+func (m *EnsureLoadBalancerResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_EnsureLoadBalancerResp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EnsureLoadBalancerResp proto.InternalMessageInfo
+
+func (m *EnsureLoadBalancerResp) GetOk() bool {
+	if m != nil {
+		return m.Ok
+	}
+	return false
+}
+
+func (m *EnsureLoadBalancerResp) GetErrMsg() string {
+	if m != nil {
+		return m.ErrMsg
+	}
+	return ""
+}
+
+func (m *EnsureLoadBalancerResp) GetStatus() *v1.LoadBalancerStatus {
+	if m != nil {
+		return m.Status
+	}
+	return nil
+}
+
+type SimpleResp struct {
+	Ok                   bool     `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
+	ErrMsg               string   `protobuf:"bytes,2,opt,name=errMsg,proto3" json:"errMsg,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SimpleResp) Reset()         { *m = SimpleResp{} }
+func (m *SimpleResp) String() string { return proto.CompactTextString(m) }
+func (*SimpleResp) ProtoMessage()    {}
+func (*SimpleResp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_55aa07ea648bece9, []int{5}
+}
+func (m *SimpleResp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SimpleResp.Unmarshal(m, b)
+}
+func (m *SimpleResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SimpleResp.Marshal(b, m, deterministic)
+}
+func (m *SimpleResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SimpleResp.Merge(m, src)
+}
+func (m *SimpleResp) XXX_Size() int {
+	return xxx_messageInfo_SimpleResp.Size(m)
+}
+func (m *SimpleResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_SimpleResp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SimpleResp proto.InternalMessageInfo
+
+func (m *SimpleResp) GetOk() bool {
+	if m != nil {
+		return m.Ok
+	}
+	return false
+}
+
+func (m *SimpleResp) GetErrMsg() string {
+	if m != nil {
+		return m.ErrMsg
+	}
+	return ""
+}
+
 func init() {
-	proto.RegisterType((*Foo)(nil), "com.github.xen0n.cloudprovidershim.v1alpha1.Foo")
+	proto.RegisterType((*ServiceRef)(nil), "com.github.xen0n.cloudprovidershim.v1alpha1.ServiceRef")
+	proto.RegisterType((*GetLoadBalancerResp)(nil), "com.github.xen0n.cloudprovidershim.v1alpha1.GetLoadBalancerResp")
+	proto.RegisterType((*GetLoadBalancerNameResp)(nil), "com.github.xen0n.cloudprovidershim.v1alpha1.GetLoadBalancerNameResp")
+	proto.RegisterType((*LoadBalancerParams)(nil), "com.github.xen0n.cloudprovidershim.v1alpha1.LoadBalancerParams")
+	proto.RegisterType((*EnsureLoadBalancerResp)(nil), "com.github.xen0n.cloudprovidershim.v1alpha1.EnsureLoadBalancerResp")
+	proto.RegisterType((*SimpleResp)(nil), "com.github.xen0n.cloudprovidershim.v1alpha1.SimpleResp")
 }
 
 func init() { proto.RegisterFile("v1alpha1/lb.proto", fileDescriptor_55aa07ea648bece9) }
 
 var fileDescriptor_55aa07ea648bece9 = []byte{
-	// 187 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x34, 0x8d, 0xb1, 0x8b, 0x83, 0x30,
-	0x18, 0xc5, 0xf1, 0x3c, 0x0e, 0x2e, 0x07, 0xc7, 0x5d, 0x26, 0x69, 0x17, 0x71, 0x12, 0x4a, 0xbf,
-	0x34, 0xed, 0xd2, 0xb9, 0x43, 0xe9, 0x6c, 0xb7, 0x6e, 0x31, 0x7e, 0x68, 0xa8, 0xe6, 0x0b, 0x51,
-	0x43, 0xff, 0xfc, 0xa2, 0xe2, 0xf6, 0x1e, 0xbc, 0xdf, 0xef, 0xb1, 0xff, 0x20, 0x55, 0xeb, 0x1a,
-	0x25, 0x45, 0x5b, 0x82, 0xf3, 0x34, 0x10, 0xdf, 0x69, 0xea, 0xa0, 0x36, 0x43, 0x33, 0x96, 0xf0,
-	0x42, 0x7b, 0xb0, 0xa0, 0x5b, 0x1a, 0x2b, 0xe7, 0x29, 0x98, 0x0a, 0x7d, 0xdf, 0x98, 0x0e, 0x56,
-	0x6a, 0x93, 0x3d, 0xcf, 0x3d, 0x18, 0x12, 0xca, 0x19, 0xa1, 0xc9, 0xa3, 0x08, 0x52, 0xd4, 0x68,
-	0xd1, 0xab, 0x01, 0xab, 0x45, 0x98, 0xdd, 0x58, 0x7c, 0x25, 0xe2, 0x7b, 0x16, 0xf7, 0x41, 0x27,
-	0x51, 0x1a, 0xe5, 0x3f, 0xc7, 0x2d, 0x2c, 0x20, 0x28, 0x67, 0x60, 0x02, 0x21, 0x48, 0xb8, 0xa3,
-	0x0f, 0x46, 0x63, 0x31, 0xed, 0x38, 0x67, 0x9f, 0x56, 0x75, 0x98, 0x7c, 0xa4, 0x51, 0xfe, 0x5d,
-	0xcc, 0xf9, 0xf2, 0xf7, 0xf8, 0x9d, 0x95, 0x62, 0xfd, 0x2f, 0xbf, 0xe6, 0x7e, 0x7a, 0x07, 0x00,
-	0x00, 0xff, 0xff, 0x72, 0xc2, 0xda, 0xe2, 0xc8, 0x00, 0x00, 0x00,
+	// 482 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x54, 0xb1, 0x8f, 0xd3, 0x3e,
+	0x18, 0xad, 0xdb, 0xfb, 0xf5, 0xc7, 0x7d, 0x95, 0x0e, 0xf8, 0x90, 0xee, 0x42, 0x59, 0x2a, 0x0f,
+	0xa8, 0x12, 0x92, 0x43, 0x0b, 0x08, 0x26, 0x40, 0xc7, 0x21, 0x16, 0x38, 0x41, 0xaa, 0x5b, 0xd8,
+	0xdc, 0xe4, 0xa3, 0xb5, 0x9a, 0xc4, 0x91, 0xed, 0x46, 0x37, 0xb2, 0xb1, 0x01, 0x0b, 0xb0, 0xf0,
+	0xc7, 0xa2, 0xba, 0xcd, 0x5d, 0xb9, 0x76, 0x49, 0x41, 0x62, 0x8b, 0x9d, 0xcf, 0xef, 0x3d, 0xbf,
+	0xf7, 0x12, 0xb8, 0x59, 0x0e, 0x64, 0x5a, 0x4c, 0xe5, 0x20, 0x4c, 0xc7, 0xa2, 0x30, 0xda, 0x69,
+	0xbc, 0x17, 0xeb, 0x4c, 0x4c, 0x94, 0x9b, 0xce, 0xc7, 0xe2, 0x9c, 0xf2, 0xfb, 0xb9, 0x88, 0x53,
+	0x3d, 0x4f, 0x0a, 0xa3, 0x4b, 0x95, 0x90, 0xb1, 0x53, 0x95, 0x89, 0xea, 0x54, 0x97, 0xcf, 0x9e,
+	0x58, 0xa1, 0x74, 0x28, 0x0b, 0x15, 0xc6, 0xda, 0x50, 0x58, 0x0e, 0xc2, 0x09, 0xe5, 0x64, 0xa4,
+	0xa3, 0x64, 0x09, 0xc8, 0x09, 0x60, 0x44, 0xa6, 0x54, 0x31, 0x45, 0xf4, 0x01, 0x7b, 0xd0, 0x89,
+	0xd3, 0xb9, 0x75, 0x64, 0x4e, 0x65, 0x46, 0x01, 0xeb, 0xb1, 0xfe, 0x7e, 0xb4, 0xbe, 0x85, 0x8f,
+	0xe0, 0x7f, 0xbb, 0x9c, 0x0f, 0x9a, 0x3d, 0xd6, 0xef, 0x0c, 0xef, 0x88, 0x25, 0x8b, 0x90, 0x85,
+	0x12, 0x0b, 0x16, 0x51, 0x0e, 0x44, 0x05, 0x59, 0xcd, 0xf2, 0x6f, 0x0c, 0x6e, 0xbd, 0x22, 0xf7,
+	0x5a, 0xcb, 0xe4, 0x58, 0xa6, 0x32, 0x8f, 0xc9, 0x44, 0x64, 0x0b, 0x3c, 0x80, 0xa6, 0x9e, 0x79,
+	0x9e, 0x6b, 0x51, 0x53, 0xcf, 0xf0, 0x10, 0xda, 0x64, 0xcc, 0x1b, 0x3b, 0xf1, 0xe8, 0xfb, 0xd1,
+	0x6a, 0x85, 0x4f, 0xa1, 0x6d, 0x9d, 0x74, 0x73, 0x1b, 0xb4, 0x3c, 0xeb, 0xdd, 0x6d, 0xac, 0xeb,
+	0xe8, 0x23, 0x3f, 0x1d, 0xad, 0x4e, 0x79, 0xdc, 0x73, 0x65, 0x9d, 0x0d, 0xf6, 0x3c, 0xd7, 0x6a,
+	0xc5, 0xcf, 0xe0, 0xe8, 0x8a, 0xac, 0xc5, 0x2d, 0x6b, 0x49, 0x43, 0xd8, 0xcb, 0x17, 0x66, 0xb5,
+	0xfc, 0xae, 0x7f, 0xe6, 0x3f, 0x18, 0xe0, 0x3a, 0xe8, 0x5b, 0x69, 0x64, 0x66, 0xf1, 0xdd, 0xa5,
+	0x79, 0xcc, 0x5f, 0xe3, 0xb1, 0xa8, 0x91, 0xa7, 0xb8, 0x0c, 0xea, 0xc2, 0x58, 0x14, 0xf0, 0x5f,
+	0xae, 0x13, 0xb2, 0x41, 0xb3, 0xd7, 0xea, 0x77, 0x86, 0xc1, 0x36, 0x5f, 0x4e, 0x75, 0x42, 0xd1,
+	0x72, 0x8c, 0x7f, 0x64, 0x70, 0xf8, 0x32, 0xb7, 0x73, 0x43, 0xff, 0x2a, 0x0b, 0xfe, 0x10, 0x60,
+	0xa4, 0xb2, 0x22, 0xad, 0x65, 0xf3, 0xf0, 0x53, 0x1b, 0x8e, 0x46, 0x53, 0x95, 0xfd, 0x06, 0xbc,
+	0x32, 0xe1, 0x33, 0x83, 0xeb, 0x57, 0x62, 0xc4, 0x5d, 0xad, 0xed, 0x3e, 0xaf, 0x75, 0x70, 0x4b,
+	0xa9, 0x79, 0x03, 0xbf, 0x6f, 0xd6, 0xdd, 0x7f, 0x3d, 0x3b, 0x8b, 0x3a, 0xf9, 0x13, 0x51, 0x55,
+	0xa5, 0x79, 0x03, 0x7f, 0x32, 0xc0, 0xcd, 0xf8, 0xf1, 0x59, 0x2d, 0xf8, 0xcd, 0x66, 0x77, 0x5f,
+	0xd4, 0x02, 0xd8, 0x5e, 0x40, 0xde, 0xc0, 0xaf, 0x0c, 0xf0, 0xac, 0x48, 0xa4, 0xfb, 0xcb, 0xf2,
+	0x6a, 0xfa, 0x7e, 0xd1, 0x4e, 0xde, 0xc0, 0x2f, 0x0c, 0x6e, 0x6f, 0xea, 0x3d, 0xa1, 0x94, 0x1c,
+	0x25, 0xbb, 0x07, 0xba, 0xbb, 0xa2, 0xe3, 0x1b, 0xef, 0x0f, 0xfc, 0xbf, 0x3b, 0xac, 0x5e, 0x8f,
+	0xdb, 0x7e, 0xfd, 0xe0, 0x57, 0x00, 0x00, 0x00, 0xff, 0xff, 0xda, 0x97, 0x0e, 0x00, 0x31, 0x06,
+	0x00, 0x00,
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// ShimLoadBalancerServiceClient is the client API for ShimLoadBalancerService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type ShimLoadBalancerServiceClient interface {
+	GetLoadBalancer(ctx context.Context, in *ServiceRef, opts ...grpc.CallOption) (*GetLoadBalancerResp, error)
+	GetLoadBalancerName(ctx context.Context, in *ServiceRef, opts ...grpc.CallOption) (*GetLoadBalancerNameResp, error)
+	EnsureLoadBalancer(ctx context.Context, in *LoadBalancerParams, opts ...grpc.CallOption) (*EnsureLoadBalancerResp, error)
+	UpdateLoadBalancer(ctx context.Context, in *LoadBalancerParams, opts ...grpc.CallOption) (*SimpleResp, error)
+	EnsureLoadBalancerDeleted(ctx context.Context, in *ServiceRef, opts ...grpc.CallOption) (*SimpleResp, error)
+}
+
+type shimLoadBalancerServiceClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewShimLoadBalancerServiceClient(cc *grpc.ClientConn) ShimLoadBalancerServiceClient {
+	return &shimLoadBalancerServiceClient{cc}
+}
+
+func (c *shimLoadBalancerServiceClient) GetLoadBalancer(ctx context.Context, in *ServiceRef, opts ...grpc.CallOption) (*GetLoadBalancerResp, error) {
+	out := new(GetLoadBalancerResp)
+	err := c.cc.Invoke(ctx, "/com.github.xen0n.cloudprovidershim.v1alpha1.ShimLoadBalancerService/GetLoadBalancer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *shimLoadBalancerServiceClient) GetLoadBalancerName(ctx context.Context, in *ServiceRef, opts ...grpc.CallOption) (*GetLoadBalancerNameResp, error) {
+	out := new(GetLoadBalancerNameResp)
+	err := c.cc.Invoke(ctx, "/com.github.xen0n.cloudprovidershim.v1alpha1.ShimLoadBalancerService/GetLoadBalancerName", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *shimLoadBalancerServiceClient) EnsureLoadBalancer(ctx context.Context, in *LoadBalancerParams, opts ...grpc.CallOption) (*EnsureLoadBalancerResp, error) {
+	out := new(EnsureLoadBalancerResp)
+	err := c.cc.Invoke(ctx, "/com.github.xen0n.cloudprovidershim.v1alpha1.ShimLoadBalancerService/EnsureLoadBalancer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *shimLoadBalancerServiceClient) UpdateLoadBalancer(ctx context.Context, in *LoadBalancerParams, opts ...grpc.CallOption) (*SimpleResp, error) {
+	out := new(SimpleResp)
+	err := c.cc.Invoke(ctx, "/com.github.xen0n.cloudprovidershim.v1alpha1.ShimLoadBalancerService/UpdateLoadBalancer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *shimLoadBalancerServiceClient) EnsureLoadBalancerDeleted(ctx context.Context, in *ServiceRef, opts ...grpc.CallOption) (*SimpleResp, error) {
+	out := new(SimpleResp)
+	err := c.cc.Invoke(ctx, "/com.github.xen0n.cloudprovidershim.v1alpha1.ShimLoadBalancerService/EnsureLoadBalancerDeleted", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ShimLoadBalancerServiceServer is the server API for ShimLoadBalancerService service.
+type ShimLoadBalancerServiceServer interface {
+	GetLoadBalancer(context.Context, *ServiceRef) (*GetLoadBalancerResp, error)
+	GetLoadBalancerName(context.Context, *ServiceRef) (*GetLoadBalancerNameResp, error)
+	EnsureLoadBalancer(context.Context, *LoadBalancerParams) (*EnsureLoadBalancerResp, error)
+	UpdateLoadBalancer(context.Context, *LoadBalancerParams) (*SimpleResp, error)
+	EnsureLoadBalancerDeleted(context.Context, *ServiceRef) (*SimpleResp, error)
+}
+
+// UnimplementedShimLoadBalancerServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedShimLoadBalancerServiceServer struct {
+}
+
+func (*UnimplementedShimLoadBalancerServiceServer) GetLoadBalancer(ctx context.Context, req *ServiceRef) (*GetLoadBalancerResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLoadBalancer not implemented")
+}
+func (*UnimplementedShimLoadBalancerServiceServer) GetLoadBalancerName(ctx context.Context, req *ServiceRef) (*GetLoadBalancerNameResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLoadBalancerName not implemented")
+}
+func (*UnimplementedShimLoadBalancerServiceServer) EnsureLoadBalancer(ctx context.Context, req *LoadBalancerParams) (*EnsureLoadBalancerResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EnsureLoadBalancer not implemented")
+}
+func (*UnimplementedShimLoadBalancerServiceServer) UpdateLoadBalancer(ctx context.Context, req *LoadBalancerParams) (*SimpleResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateLoadBalancer not implemented")
+}
+func (*UnimplementedShimLoadBalancerServiceServer) EnsureLoadBalancerDeleted(ctx context.Context, req *ServiceRef) (*SimpleResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EnsureLoadBalancerDeleted not implemented")
+}
+
+func RegisterShimLoadBalancerServiceServer(s *grpc.Server, srv ShimLoadBalancerServiceServer) {
+	s.RegisterService(&_ShimLoadBalancerService_serviceDesc, srv)
+}
+
+func _ShimLoadBalancerService_GetLoadBalancer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ServiceRef)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShimLoadBalancerServiceServer).GetLoadBalancer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.github.xen0n.cloudprovidershim.v1alpha1.ShimLoadBalancerService/GetLoadBalancer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShimLoadBalancerServiceServer).GetLoadBalancer(ctx, req.(*ServiceRef))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ShimLoadBalancerService_GetLoadBalancerName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ServiceRef)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShimLoadBalancerServiceServer).GetLoadBalancerName(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.github.xen0n.cloudprovidershim.v1alpha1.ShimLoadBalancerService/GetLoadBalancerName",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShimLoadBalancerServiceServer).GetLoadBalancerName(ctx, req.(*ServiceRef))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ShimLoadBalancerService_EnsureLoadBalancer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoadBalancerParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShimLoadBalancerServiceServer).EnsureLoadBalancer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.github.xen0n.cloudprovidershim.v1alpha1.ShimLoadBalancerService/EnsureLoadBalancer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShimLoadBalancerServiceServer).EnsureLoadBalancer(ctx, req.(*LoadBalancerParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ShimLoadBalancerService_UpdateLoadBalancer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoadBalancerParams)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShimLoadBalancerServiceServer).UpdateLoadBalancer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.github.xen0n.cloudprovidershim.v1alpha1.ShimLoadBalancerService/UpdateLoadBalancer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShimLoadBalancerServiceServer).UpdateLoadBalancer(ctx, req.(*LoadBalancerParams))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ShimLoadBalancerService_EnsureLoadBalancerDeleted_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ServiceRef)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShimLoadBalancerServiceServer).EnsureLoadBalancerDeleted(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.github.xen0n.cloudprovidershim.v1alpha1.ShimLoadBalancerService/EnsureLoadBalancerDeleted",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShimLoadBalancerServiceServer).EnsureLoadBalancerDeleted(ctx, req.(*ServiceRef))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _ShimLoadBalancerService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "com.github.xen0n.cloudprovidershim.v1alpha1.ShimLoadBalancerService",
+	HandlerType: (*ShimLoadBalancerServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetLoadBalancer",
+			Handler:    _ShimLoadBalancerService_GetLoadBalancer_Handler,
+		},
+		{
+			MethodName: "GetLoadBalancerName",
+			Handler:    _ShimLoadBalancerService_GetLoadBalancerName_Handler,
+		},
+		{
+			MethodName: "EnsureLoadBalancer",
+			Handler:    _ShimLoadBalancerService_EnsureLoadBalancer_Handler,
+		},
+		{
+			MethodName: "UpdateLoadBalancer",
+			Handler:    _ShimLoadBalancerService_UpdateLoadBalancer_Handler,
+		},
+		{
+			MethodName: "EnsureLoadBalancerDeleted",
+			Handler:    _ShimLoadBalancerService_EnsureLoadBalancerDeleted_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "v1alpha1/lb.proto",
 }
