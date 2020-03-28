@@ -7,7 +7,7 @@ import (
 type CloudProvider struct {
 	Name string
 
-	lb *ShimLoadBalancer
+	LB *ShimLoadBalancer
 }
 
 var _ cloudprovider.Interface = (*CloudProvider)(nil)
@@ -21,10 +21,10 @@ func (p *CloudProvider) Initialize(clientBuilder cloudprovider.ControllerClientB
 
 // LoadBalancer returns a balancer interface. Also returns true if the interface is supported, false otherwise.
 func (p *CloudProvider) LoadBalancer() (cloudprovider.LoadBalancer, bool) {
-	if p.lb == nil {
+	if p.LB == nil {
 		return nil, false
 	}
-	return p.lb, true
+	return p.LB, true
 }
 
 // Instances returns an instances interface. Also returns true if the interface is supported, false otherwise.
