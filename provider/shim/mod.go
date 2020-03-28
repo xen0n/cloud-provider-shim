@@ -4,7 +4,9 @@ import (
 	cloudprovider "k8s.io/cloud-provider"
 )
 
-type CloudProvider struct{}
+type CloudProvider struct {
+	Name string
+}
 
 var _ cloudprovider.Interface = (*CloudProvider)(nil)
 
@@ -42,8 +44,7 @@ func (p *CloudProvider) Routes() (cloudprovider.Routes, bool) {
 
 // ProviderName returns the cloud provider ID.
 func (p *CloudProvider) ProviderName() string {
-	// TODO: return something that can be configured
-	return "shim"
+	return p.Name
 }
 
 // HasClusterID returns true if a ClusterID is required and set
