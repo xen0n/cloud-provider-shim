@@ -12,7 +12,7 @@ import (
 )
 
 type ShimLoadBalancer struct {
-	logger logrus.Logger
+	logger *logrus.Logger
 	cl     pb.ShimLoadBalancerServiceClient
 }
 
