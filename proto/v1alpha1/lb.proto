@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package com.github.xen0n.cloudprovidershim.v1alpha1;
+
+option go_package = "proto/v1alpha1";
+
+import "k8s.io/api/core/v1/generated.proto";
+
+message Foo {
+  k8s.io.api.core.v1.Service svc = 1;
+  string name = 2;
+}
