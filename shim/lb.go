@@ -18,6 +18,16 @@ type ShimLoadBalancer struct {
 
 var _ cloudprovider.LoadBalancer = (*ShimLoadBalancer)(nil)
 
+func NewShimLoadBalancer(
+	l *logrus.Logger,
+	cl pb.ShimLoadBalancerServiceClient,
+) *ShimLoadBalancer {
+	return &ShimLoadBalancer{
+		logger: l,
+		cl:     cl,
+	}
+}
+
 // TODO: Break this up into different interfaces (LB, etc) when we have more than one type of service
 // GetLoadBalancer returns whether the specified load balancer exists, and
 // if so, what its status is.
