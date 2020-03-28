@@ -2,14 +2,18 @@ package shim
 
 import (
 	"context"
+	"errors"
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	cloudprovider "k8s.io/cloud-provider"
+
+	pb "github.com/xen0n/cloud-provider-shim/proto/v1alpha1"
 )
 
 type ShimLoadBalancer struct {
 	logger logrus.Logger
+	cl     pb.ShimLoadBalancerServiceClient
 }
 
 var _ cloudprovider.LoadBalancer = (*ShimLoadBalancer)(nil)
@@ -25,7 +29,20 @@ func (b *ShimLoadBalancer) GetLoadBalancer(ctx context.Context, clusterName stri
 		"service":     service,
 	}).Debug("GetLoadBalancer called")
 
-	panic("not implemented") // TODO: Implement
+	req := pb.ServiceRef{
+		ClusterName: clusterName,
+		Service:     service,
+	}
+	resp, err := b.cl.GetLoadBalancer(ctx, &req)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if !resp.Ok {
+		return nil, false, errors.New(resp.ErrMsg)
+	}
+
+	return resp.Status, resp.Exists, nil
 }
 
 // GetLoadBalancerName returns the name of the load balancer. Implementations must treat the
@@ -36,7 +53,22 @@ func (b *ShimLoadBalancer) GetLoadBalancerName(ctx context.Context, clusterName 
 		"service":     service,
 	}).Debug("GetLoadBalancerName called")
 
-	panic("not implemented") // TODO: Implement
+	req := pb.ServiceRef{
+		ClusterName: clusterName,
+		Service:     service,
+	}
+	resp, err := b.cl.GetLoadBalancerName(ctx, &req)
+	if err != nil {
+		// TODO: wut this method returns no error?
+		panic(err)
+	}
+
+	if !resp.Ok {
+		// TODO: wut this method returns no error?
+		panic(resp.ErrMsg)
+	}
+
+	return resp.Name
 }
 
 // EnsureLoadBalancer creates a new load balancer 'name', or updates the existing one. Returns the status of the balancer
@@ -50,7 +82,23 @@ func (b *ShimLoadBalancer) EnsureLoadBalancer(ctx context.Context, clusterName s
 		"nodes":       nodes,
 	}).Debug("EnsureLoadBalancer called")
 
-	panic("not implemented") // TODO: Implement
+	req := pb.LoadBalancerParams{
+		Service: &pb.ServiceRef{
+			ClusterName: clusterName,
+			Service:     service,
+		},
+		Nodes: nodes,
+	}
+	resp, err := b.cl.EnsureLoadBalancer(ctx, &req)
+	if err != nil {
+		return nil, err
+	}
+
+	if !resp.Ok {
+		return nil, errors.New(resp.ErrMsg)
+	}
+
+	return resp.Status, nil
 }
 
 // UpdateLoadBalancer updates hosts under the specified load balancer.
@@ -64,7 +112,23 @@ func (b *ShimLoadBalancer) UpdateLoadBalancer(ctx context.Context, clusterName s
 		"nodes":       nodes,
 	}).Debug("UpdateLoadBalancer called")
 
-	panic("not implemented") // TODO: Implement
+	req := pb.LoadBalancerParams{
+		Service: &pb.ServiceRef{
+			ClusterName: clusterName,
+			Service:     service,
+		},
+		Nodes: nodes,
+	}
+	resp, err := b.cl.UpdateLoadBalancer(ctx, &req)
+	if err != nil {
+		return err
+	}
+
+	if !resp.Ok {
+		return errors.New(resp.ErrMsg)
+	}
+
+	return nil
 }
 
 // EnsureLoadBalancerDeleted deletes the specified load balancer if it
@@ -81,5 +145,18 @@ func (b *ShimLoadBalancer) EnsureLoadBalancerDeleted(ctx context.Context, cluste
 		"service":     service,
 	}).Debug("EnsureLoadBalancerDeleted called")
 
-	panic("not implemented") // TODO: Implement
+	req := pb.ServiceRef{
+		ClusterName: clusterName,
+		Service:     service,
+	}
+	resp, err := b.cl.EnsureLoadBalancerDeleted(ctx, &req)
+	if err != nil {
+		return err
+	}
+
+	if !resp.Ok {
+		return errors.New(resp.ErrMsg)
+	}
+
+	return nil
 }
